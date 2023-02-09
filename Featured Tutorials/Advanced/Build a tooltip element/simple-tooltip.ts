@@ -16,8 +16,21 @@ export class SimpleTooltip extends LitElement {
     }
   `;
 
+  connectedCallback() {
+    super.connectedCallback();
+    this.hide();
+  }
+
   render() {
     return html`<slot></slot>`;
   }
+
+  show = () => {
+    this.style.cssText = '';
+  };
+
+  hide = () => {
+    this.style.display = 'none';
+  };
 
 }
