@@ -1,6 +1,8 @@
-import {html, css, LitElement} from 'lit';
+import {html, css, LitElement, ElementPart, render} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {Directive, DirectiveParameters, directive} from 'lit/directive.js';
 
+/* playground-fold */
 import {computePosition, autoPlacement, offset, shift} from '@floating-ui/dom';
 
 const enterEvents = ['pointerenter', 'focus'];
@@ -120,9 +122,39 @@ export class SimpleTooltip extends LitElement {
 
 }
 
-declare global {
-  interface HTMLElementTagNameMap {
-    "simple-tooltip": SimpleTooltip;
+/* playground-fold-end */
+
+class TooltipDirective extends Directive {
+  didSetupLazy = false;
+  tooltipContent?: unknown;
+  part?: ElementPart;
+  tooltip?: SimpleTooltip;
+
+  // A directive must define a render method.
+  render(tooltipContent: unknown = '') {}
+
+  update(part: ElementPart, [tooltipContent]: DirectiveParameters<this>) {
+    this.tooltipContent = tooltipContent;
+    this.part = part;
+    if (!this.didSetupLazy) {
+      this.setupLazy();
+    }
+    if (this.tooltip) {
+      this.renderTooltipContent();
+    }
+  }
+
+  setupLazy() {
+    this.didSetupLazy = true;
+    SimpleTooltip.lazy(this.part!.element, (tooltip: SimpleTooltip) => {
+      this.tooltip = tooltip;
+      this.renderTooltipContent();
+    });
+  }
+
+  renderTooltipContent() {
+    render(this.tooltipContent, this.tooltip!, this.part!.options);
   }
 }
 
+export const tooltip = directive(TooltipDirective);
