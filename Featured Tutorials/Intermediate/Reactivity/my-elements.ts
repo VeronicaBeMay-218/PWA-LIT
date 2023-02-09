@@ -1,67 +1,45 @@
 import {LitElement, html, css, PropertyValues} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
-import {classMap} from 'lit/directives/class-map.js';
-import {animate} from '@lit-labs/motion';
+import {customElement, state, query} from 'lit/decorators.js';
 
 @customElement('my-element')
 export class MyElement extends LitElement {
-  @property({type: Boolean}) big = false;
-  @property({type: Number}) duration = 500;
-  @state() _renderCount = 0;
-
   static styles = css`
-    .bar {
-      background: red;
-      height: 2em;
-      width: 10vw;
+    :host {
+      display: block;
     }
-
-    .big {
-      width: 50vw;
+    #message {
+      position: fixed;
+      background-color: cornflowerblue;
+      color: white;
+      padding: 10px;
     }
   `;
+  @state()
+  _showMessage = false;
 
-  setDuration(e: Event) {
-    const v = (e.target as HTMLSelectElement).value;
-    this.duration = Number.parseInt(v);
+  @query('#message')
+  _message!: HTMLDivElement;
+
+  render() {
+    return html`
+      <button @click=${() => this._showMessage = !this._showMessage}>Click me</button>
+      <div id="message" ?hidden=${!this._showMessage}>
+        TADA
+      </div>
+    `;
   }
 
-  shouldUpdate(changedProperties: PropertyValues<this>): boolean {
-    return !(changedProperties.size === 1 && changedProperties.has('duration'));
-  }
-  import {LitElement, html, PropertyValues} from 'lit';
-  import {customElement, property} from 'lit/decorators.js';
-  
-  @customElement('my-element')
-  export class MyElement extends LitElement {
-    @property() forward = '';
-    @property() backward = '';
-  
-    willUpdate(changedProperties: PropertyValues<this>) {
-      if (changedProperties.has('forward')) {
-        this.backward = this.forward.split('').reverse().join('');
-      }
-  
-      if (changedProperties.has('backward')) {
-        this.forward = this.backward.split('').reverse().join('');
-      }
-    }
-  
-    onInput(e: Event) {
-      const inputEl = e.target as HTMLInputElement;
-      if (inputEl.id === 'forward') {
-        this.forward = inputEl.value;
-      } else {
-        this.backward = inputEl.value;
-      }
-    }
-  
-    render() {
-      return html`
-        <label>Forward: <input id="forward" @input=${this.onInput} .value=${this.forward}></label>
-        <label>Backward: <input id="backward" @input=${this.onInput} .value=${this.backward}></label>
-        <div>Forward text: ${this.forward}</div>
-        <div>Backward text: ${this.backward}</div>
-      `;
+  protected updated(changedProperties: PropertyValues<this>): void {
+    if (changedProperties.has('_showMessage')) {
+      const final = this._message.getBoundingClientRect().width;
+      const starting = 0 - final;
+      this._message.animate([
+        { transform: `translateX(${starting}px)` },
+        { transform: `translateX(0)` }
+      ], {
+        duration: 500,
+        easing: 'ease-out',
+      });
     }
   }
+}
