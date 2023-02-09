@@ -10,8 +10,15 @@ export class TimeAgoExample extends LitElement {
 
   render() {
     return html`
-      <p>This page was rendered ${timeAgo(timeCreated)}.</p>
+      <p @click=${this.handleClick}>
+        This page was rendered ${timeAgo(timeCreated)}.
+      </p>
     `;
   }
 
+  handleClick() {
+    const parent = this.parentNode;
+    this.remove();
+    setTimeout(() => parent!.appendChild(this), 1000);
+  }
 }
