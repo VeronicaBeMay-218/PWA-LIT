@@ -20,7 +20,6 @@ class TimeAgoDirective extends AsyncDirective {
   }
 
   ensureTimerStarted() {
-    console.log('timer started');
     if (this.timer === undefined) {
       this.timer = setInterval(() => {
         this.setValue(this.render(this.time));
@@ -29,7 +28,6 @@ class TimeAgoDirective extends AsyncDirective {
   }
 
   ensureTimerStopped() {
-    console.log('timer stopped');
     clearInterval(this.timer);
     this.timer = undefined;
   }
