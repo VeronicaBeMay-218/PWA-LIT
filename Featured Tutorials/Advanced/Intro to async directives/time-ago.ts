@@ -1,7 +1,7 @@
 import {format} from 'timeago.js';
-import {directive, Directive} from 'lit/directive.js';
+import {directive, AsyncDirective} from 'lit/async-directive.js';
 
-class TimeAgoDirective extends Directive {
+class TimeAgoDirective extends AsyncDirective {
 
   render(time: Date) {
     return format(time);
