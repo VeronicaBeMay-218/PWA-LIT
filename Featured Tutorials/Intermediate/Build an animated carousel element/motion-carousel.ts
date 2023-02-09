@@ -1,5 +1,4 @@
 import {LitElement, html, PropertyValues} from 'lit';
-import {LitElement, html, PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {styles} from './styles.js';
 
