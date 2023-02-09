@@ -1,16 +1,18 @@
 import {format} from 'timeago.js';
 import {directive, AsyncDirective} from 'lit/async-directive.js';
-import {Part, DirectiveParameters} from 'lit/directive.js';
+import type {Part, DirectiveParameters} from 'lit/directive.js';
 
 class TimeAgoDirective extends AsyncDirective {
 
   timer: number | undefined;
+  time!: Date;
 
   render(time: Date) {
     return format(time);
   }
 
   update(part: Part, [time]: DirectiveParameters<this>) {
+    this.time = time;
     if (this.isConnected) {
       this.ensureTimerStarted();
     }
@@ -20,7 +22,7 @@ class TimeAgoDirective extends AsyncDirective {
   ensureTimerStarted() {
     if (this.timer === undefined) {
       this.timer = setInterval(() => {
-        /* do some periodic work */
+        this.setValue(this.render(this.time));
       }, 1000);
     }
   }
