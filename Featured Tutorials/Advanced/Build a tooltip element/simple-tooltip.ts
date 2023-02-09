@@ -1,10 +1,12 @@
-import {html, css, LitElement, ElementPart, render} from 'lit';
+import {html, css, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {Directive, DirectiveParameters, directive} from 'lit/directive.js';
+import {ElementPart, render} from 'lit';
 
-/* playground-fold */
+// Positioning library
 import {computePosition, autoPlacement, offset, shift} from '@floating-ui/dom';
 
+// Events to turn on/off the tooltip
 const enterEvents = ['pointerenter', 'focus'];
 const leaveEvents = ['pointerleave', 'blur', 'keydown', 'click'];
 
@@ -28,13 +30,15 @@ export class SimpleTooltip extends LitElement {
 
   static styles = css`
     :host {
-      display: inline-block;
+      /* Position fixed to help ensure the tooltip is "on top" */
       position: fixed;
-      padding: 4px;
       border: 1px solid darkgray;
-      border-radius: 4px;
       background: #ccc;
+      padding: 4px;
+      border-radius: 4px;
+      display: inline-block;
       pointer-events: none;
+
       /* Animate in */
       opacity: 0;
       transform: scale(0.75);
@@ -48,35 +52,13 @@ export class SimpleTooltip extends LitElement {
     }
   `;
 
-  @property({type: Number})
-  offset = 4;
-
   // Attribute for styling "showing"
   @property({reflect: true, type: Boolean})
   showing = false;
 
-  _target: Element|null = null;
-
-  get target() {
-    return this._target;
-  }
-  set target(target: Element|null) {
-    // Remove events from existing target
-    if (this.target) {
-      enterEvents.forEach(name =>
-        this.target!.removeEventListener(name, this.show));
-      leaveEvents.forEach(name =>
-        this.target!.removeEventListener(name, this.hide));
-    }
-    // Add events to new target
-    if (target) {
-      enterEvents.forEach(name =>
-        target!.addEventListener(name, this.show));
-      leaveEvents.forEach(name =>
-        target!.addEventListener(name, this.hide));
-    }
-    this._target = target;
-  }
+  // Position offset
+  @property({type: Number})
+  offset = 4;
 
   constructor() {
     super();
@@ -86,12 +68,29 @@ export class SimpleTooltip extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // Setup target if needed
     this.target ??= this.previousElementSibling;
+    // Ensure hidden at start
     this.finishHide();
   }
 
-  render() {
-    return html`<slot></slot>`;
+  // Target for which to show tooltip
+  _target: Element|null = null;
+  get target() {
+    return this._target;
+  }
+  set target(target: Element|null) {
+    // Remove events from existing target
+    if (this.target) {
+      enterEvents.forEach(name => this.target!.removeEventListener(name, this.show));
+      leaveEvents.forEach(name => this.target!.removeEventListener(name, this.hide));
+    }
+    if (target) {
+      // Add events to new target
+      enterEvents.forEach(name => target!.addEventListener(name, this.show));
+      leaveEvents.forEach(name => target!.addEventListener(name, this.hide));
+    }
+    this._target = target;
   }
 
   show = () => {
@@ -120,19 +119,18 @@ export class SimpleTooltip extends LitElement {
     }
   };
 
-}
+  render() {
+    return html`<slot></slot>`;
+  }
 
-/* playground-fold-end */
+}
 
 class TooltipDirective extends Directive {
   didSetupLazy = false;
   tooltipContent?: unknown;
   part?: ElementPart;
   tooltip?: SimpleTooltip;
-
-  // A directive must define a render method.
   render(tooltipContent: unknown = '') {}
-
   update(part: ElementPart, [tooltipContent]: DirectiveParameters<this>) {
     this.tooltipContent = tooltipContent;
     this.part = part;
@@ -143,7 +141,6 @@ class TooltipDirective extends Directive {
       this.renderTooltipContent();
     }
   }
-
   setupLazy() {
     this.didSetupLazy = true;
     SimpleTooltip.lazy(this.part!.element, (tooltip: SimpleTooltip) => {
@@ -151,7 +148,6 @@ class TooltipDirective extends Directive {
       this.renderTooltipContent();
     });
   }
-
   renderTooltipContent() {
     render(this.tooltipContent, this.tooltip!, this.part!.options);
   }
